@@ -1,62 +1,64 @@
 import { GlobalStyle } from './GlobalStyle';
-import { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import FeedbackOptions from './feedback/feedback';
 import Statistics from './statistics/statistics';
 import Notification from './notification/notification';
 import Section from './section/section';
 
-export class App extends Component {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
+export const App = () => {
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setBad] = useState(0);
+
+  const option = { good, bad, neutral };
+
+  const onLeaveFeedback = option => {
+    switch (option) {
+      case 'good':
+        setGood(state => state + 1);
+        break;
+      case 'neutral':
+        setNeutral(state => state + 1);
+        break;
+      case 'bad':
+        setBad(state => state + 1);
+        break;
+      default:
+        return;
+    }
   };
 
-  onLeaveFeedback = option => {
-    this.setState(prevState => ({
-      [option]: prevState[option] + 1,
-    }));
-  };
-
-  countTotalFeedback = () => {
-    const { good, neutral, bad } = this.state;
+  const countTotalFeedback = () => {
     return good + neutral + bad;
   };
 
-  countPositiveFeedbackPercentage = () => {
-    const { good, neutral, bad } = this.state;
+  const countPositiveFeedbackPercentage = () => {
     return Math.round((good / (good + neutral + bad)) * 100);
   };
 
-  render() {
-    const keys = Object.keys(this.state);
-    const { good, neutral, bad } = this.state;
+  const keys = Object.keys(option);
 
-    return (
-      <div>
-        <Section title="Please leave feedback" />
-        <FeedbackOptions
-          options={keys}
-          onLeaveFeedback={this.onLeaveFeedback}
+  return (
+    <div>
+      <Section title="Please leave feedback" />
+      <FeedbackOptions options={keys} onLeaveFeedback={onLeaveFeedback} />
+      <Section title="Statistics" />
+      {countTotalFeedback() > 0 ? (
+        <Statistics
+          good={good}
+          neutral={neutral}
+          bad={bad}
+          total={countTotalFeedback}
+          positivePercentage={countPositiveFeedbackPercentage}
         />
-        <Section title="Statistics" />
-        {this.countTotalFeedback() > 0 ? (
-          <Statistics
-            good={good}
-            neutral={neutral}
-            bad={bad}
-            total={this.countTotalFeedback}
-            positivePercentage={this.countPositiveFeedbackPercentage}
-          />
-        ) : (
-          <Notification message="No feedback given" />
-        )}
-        <GlobalStyle />
-      </div>
-    );
-  }
-}
+      ) : (
+        <Notification message="No feedback given" />
+      )}
+      <GlobalStyle />
+    </div>
+  );
+};
 
 App.propType = {
   good: PropTypes.number.isRequired,
